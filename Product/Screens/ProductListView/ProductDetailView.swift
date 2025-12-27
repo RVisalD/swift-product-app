@@ -54,12 +54,7 @@ struct ProductDetailView: View {
                 Button {
                     
                 } label: {
-                    Text("Place Order")
-                        .frame(width: 250, height: 50)
-                        .fontWeight(.bold)
-                        .background(Color.primaryColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
+                    CustomButton(label: "Place Order")
                 }
                 .padding(.bottom, 20)
             }
