@@ -7,23 +7,24 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
-final class AccountViewModel: ObservableObject{
-    @Published var firstName = ""
-    @Published var lastName = ""
-    @Published var email = ""
-    @Published var dateOfBirth = Date()
-    @Published var savePayment = false
-    @Published var isLoading = false
+final class AccountViewModel: ObservableObject {
+    
+    @AppStorage("user") private var userAppStorage: Data?
+    
+    @Published var userData = User()
     @Published var alertItem: AlertItem?
     
+    let decode = JSONDecoder()
+    
     var isValidForm: Bool {
-        guard firstName != "" && lastName != "" && email != "" else {
+        guard userData.firstName != "" && userData.lastName != "" && userData.email != "" else {
             alertItem = AlertContext.pleaseInputAllField
             return false
         }
         
-        guard email.isValidEmail else {
+        guard userData.email.isValidEmail else {
             alertItem = AlertContext.emailInvalid
             return false
         }
@@ -35,6 +36,22 @@ final class AccountViewModel: ObservableObject{
         guard isValidForm else {
             return
         }
-        isLoading = true
+        do {
+            let data = try JSONEncoder().encode(userData)
+            userAppStorage = data
+            alertItem = AlertContext.storeUserDataToAppStorageSuccess
+        } catch{
+            alertItem = AlertContext.storeUserDataToAppStorageError
+        }
+    }
+    func retrieveUser(){
+        guard let userAppStorage = userAppStorage else { return }
+        
+        do{
+            userData = try decode.decode(User.self, from: self.userAppStorage ?? Data())
+        } catch {
+            alertItem = AlertContext.retrieveUserDataToAppStorageError
+        }
+        
     }
 }

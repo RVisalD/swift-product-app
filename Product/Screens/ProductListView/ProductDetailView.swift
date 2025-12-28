@@ -11,6 +11,7 @@ struct ProductDetailView: View {
         
     let product: Product
     @Binding var isShowing: Bool
+    @EnvironmentObject var order: Order
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -18,6 +19,18 @@ struct ProductDetailView: View {
                 ProductRemoteImage(urlString: product.images.first!)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 320, height: 250)
+                
+//                AsyncImage(url: URL(string: product.images.first!)) { image in
+//                    image
+//                        .resizable()
+//                        .aspectRatio(contentMode: .fit)
+//                        .frame(width: 320, height: 250)
+//                } placeholder: {
+//                    Image("product-placeholder")
+//                        .resizable()
+//                        .aspectRatio(contentMode: .fit)
+//                        .frame(width: 320, height: 250)
+//                }
 
                 VStack {
                     Text(product.title)
@@ -52,10 +65,13 @@ struct ProductDetailView: View {
                 Spacer()
 
                 Button {
-                    
+                    order.addProduct(product)
+                    isShowing = false
                 } label: {
-                    CustomButton(label: "Place Order")
+                    Text("Place Order")
+                        .padding(.horizontal, 20)
                 }
+                .standardButtonStyle()
                 .padding(.bottom, 20)
             }
             .frame(width: 320, height: 550)

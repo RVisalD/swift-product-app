@@ -17,6 +17,8 @@ struct ProductListView: View {
                 List(viewModel.products){
                     product in
                     ProductCell(product: product)
+//                        .listRowSeparator(.hidden)
+//                        .listRowSeparatorTint(.brandPrimary)
                         .onTapGesture{
                             viewModel.selectedProduct = product
                         }
@@ -24,7 +26,10 @@ struct ProductListView: View {
                 .navigationTitle("🧢 Products")
                 .disabled(viewModel.isShowingProductDetail)
             }
-            .onAppear{
+//            .onAppear{
+//                viewModel.getProducts()
+//            }
+            .task{
                 viewModel.getProducts()
             }
             .blur(radius: viewModel.isShowingProductDetail ? 20 : 0)

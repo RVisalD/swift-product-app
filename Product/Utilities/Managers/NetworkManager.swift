@@ -16,41 +16,57 @@ final class NetworkManager{
     static let baseUrl = "https://dummyjson.com/"
     private let productEndpoint = baseUrl + "products"
     
+    let decoder = JSONDecoder()
+    
     private init() {}
     
-    func getProducts(completed: @escaping (Result<[Product], PDError>) -> Void){
+//    func getProducts(completed: @escaping (Result<[Product], PDError>) -> Void){
+//        guard let url = URL(string: productEndpoint) else {
+//            completed(.failure(.invalidUrl))
+//            return
+//        }
+//        
+//        let task = URLSession.shared.dataTask(with: URLRequest(url: url)){ data, response, error in  
+//            if let _ = error {
+//                completed(.failure(.unableToComplete))
+//                return
+//            }
+//            
+//            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+//                completed(.failure(.invalidResponse))
+//                return
+//            }
+//            
+//            guard let data = data else {
+//                completed(.failure(.invalidData))
+//                return
+//            }
+//            
+//            do{
+//                let decoder = JSONDecoder()
+//                let decodedResponse = try decoder.decode(ProductResponse.self, from: data)
+//                
+//                completed(.success(decodedResponse.products))
+//            }
+//            catch{
+//                completed(.failure(.invalidData))
+//            }
+//        }
+//        task.resume()
+//    }
+    
+    func getProducts() async throws -> [Product] {
         guard let url = URL(string: productEndpoint) else {
-            completed(.failure(.invalidUrl))
-            return
+            throw PDError.invalidUrl
         }
         
-        let task = URLSession.shared.dataTask(with: URLRequest(url: url)){ data, response, error in  
-            if let _ = error {
-                completed(.failure(.unableToComplete))
-                return
-            }
-            
-            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-                completed(.failure(.invalidResponse))
-                return
-            }
-            
-            guard let data = data else {
-                completed(.failure(.invalidData))
-                return
-            }
-            
-            do{
-                let decoder = JSONDecoder()
-                let decodedResponse = try decoder.decode(ProductResponse.self, from: data)
-                
-                completed(.success(decodedResponse.products))
-            }
-            catch{
-                completed(.failure(.invalidData))
-            }
+        let (data, _) = try await URLSession.shared.data(from: url)
+        
+        do{
+            return  try decoder.decode(ProductResponse.self, from: data).products
+        } catch{
+            throw PDError.invalidData
         }
-        task.resume()
     }
     
     func downloadImage(fromURLString urlString: String, completed: @escaping (UIImage?) -> Void) {
@@ -75,7 +91,7 @@ final class NetworkManager{
                 self.cache.setObject(image, forKey: cacheKey)
                 
                 DispatchQueue.main.async {
-                    completed(image) // ✅ THIS WAS MISSING
+                    completed(image) 
                 }
             }
             

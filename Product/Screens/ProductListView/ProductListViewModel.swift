@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-final class ProductListViewModel: ObservableObject{
+@MainActor final class ProductListViewModel: ObservableObject{
     @Published var products: [Product] = []
     @Published var alertItem: AlertItem?
     @Published var isLoading: Bool = false
@@ -18,29 +18,55 @@ final class ProductListViewModel: ObservableObject{
         didSet{ isShowingProductDetail = true }
     }
     
-    func getProducts (){
+//    func getProducts (){
+//        self.isLoading = true
+//        NetworkManager.shared.getProducts{ result in
+//            DispatchQueue.main.async {
+//                self.isLoading = false
+//                switch result {
+//                case .success(let products):
+//                    self.products = products
+//                case .failure(let error):
+//                    switch error{
+//                    case .invalidData:
+//                        self.alertItem = AlertContext.invalidData
+//                        
+//                    case .invalidResponse:
+//                        self.alertItem = AlertContext.invalidResponse
+//                        
+//                    case .invalidUrl:
+//                        self.alertItem = AlertContext.invalidURL
+//                        
+//                    case .unableToComplete:
+//                        self.alertItem = AlertContext.unableToComplete
+//                    }
+//                }
+//            }
+//        }
+//    }
+    func getProducts () {
         self.isLoading = true
-        NetworkManager.shared.getProducts{ result in
-            DispatchQueue.main.async {
+        Task{
+            do{
+                products = try await NetworkManager.shared.getProducts()
                 self.isLoading = false
-                switch result {
-                case .success(let products):
-                    self.products = products
-                case .failure(let error):
-                    switch error{
-                    case .invalidData:
-                        self.alertItem = AlertContext.invalidData
-                        
-                    case .invalidResponse:
-                        self.alertItem = AlertContext.invalidResponse
-                        
+            } catch{
+                self.isLoading = false
+                if let pdError = error as? PDError {
+                    switch pdError {
                     case .invalidUrl:
-                        self.alertItem = AlertContext.invalidURL
-                        
+                        alertItem = AlertContext.invalidURL
+                    case .invalidResponse:
+                        alertItem = AlertContext.invalidResponse
+                    case .invalidData:
+                        alertItem = AlertContext.invalidData
                     case .unableToComplete:
-                        self.alertItem = AlertContext.unableToComplete
+                        alertItem = AlertContext.unableToComplete
                     }
                 }
+                else{
+                    alertItem = AlertContext.invalidData
+                } 
             }
         }
     }

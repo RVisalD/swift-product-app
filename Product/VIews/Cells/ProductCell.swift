@@ -13,9 +13,15 @@ struct ProductCell: View {
     
     var body: some View {
         HStack (spacing: 5){
-            ProductRemoteImage(urlString: product.images.first!) 
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 100, height: 100)
+            AsyncImage(url: URL(string: product.images.first!)) { image in
+                image
+                    .resizable()
+                    .standardProductImageStyle()
+            } placeholder: {
+                Image("product-placeholder")
+                    .resizable()
+                    .standardProductImageStyle()
+            }
             VStack (alignment: .leading, spacing: 5){
                 Text(product.title)
                     .font(Font.headline)
@@ -24,10 +30,8 @@ struct ProductCell: View {
                     .font(.body)
                     .fontWeight(.semibold)
                     .foregroundColor(.gray)
-
             }
         }
-        .frame(width: .infinity)
     }
 }
 
